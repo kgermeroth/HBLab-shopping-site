@@ -7,6 +7,7 @@ Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
 from flask import Flask, render_template, redirect, flash, session
+from flask_debugtoolbar import DebugToolbarExtension
 import jinja2
 
 import melons
@@ -49,7 +50,7 @@ def show_melon(melon_id):
     """
 
     melon = melons.get_by_id(melon_id)
-    print(melon)
+
     return render_template("melon_details.html",
                            display_melon=melon)
 
@@ -63,10 +64,17 @@ def show_shopping_cart():
     # The logic here will be something like:
     #
     # - get the cart dictionary from the session
+    
     # - create a list to hold melon objects and a variable to hold the total
     #   cost of the order
+    
+
+    total_cost = 0
+    melons = []
     # - loop over the cart dictionary, and for each melon id:
     #    - get the corresponding Melon object
+    # for melon in session['cart']:
+    #     sub_total = melon[melon_id]
     #    - compute the total cost for that type of melon
     #    - add this to the order total
     #    - add quantity and total cost as attributes on the Melon object
@@ -93,12 +101,23 @@ def add_to_cart(melon_id):
     #
     # - check if a "cart" exists in the session, and create one (an empty
     #   dictionary keyed to the string "cart") if not
+    if 'cart' not in session:
+        session['cart'] = {}
     # - check if the desired melon id is the cart, and if not, put it in
     # - increment the count for that melon id by 1
+
+    session['cart'][melon_id] = session['cart'].get(melon_id, 0) + 1
+    flash("added melon to cart")
+    session.modified = True
+
+    
+
     # - flash a success message
     # - redirect the user to the cart page
 
-    return "Oops! This needs to be implemented!"
+
+
+    return redirect("/cart")
 
 
 @app.route("/login", methods=["GET"])
@@ -145,4 +164,8 @@ def checkout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.debug = True
+    DebugToolbarExtension(app)
+    app.run(host="0.0.0.0")
+
